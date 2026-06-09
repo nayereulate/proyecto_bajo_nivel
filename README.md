@@ -577,7 +577,7 @@ E:\TechScan64.exe
 
 <div align="center">
 
-**Universidad Mayor de San Simón · Facultad de Ingeniería · Carrera de Ingeniería Informática**  
+**Universidad Mayor de San Simón · Facultad de Ciencias y Tecnología · Carrera de Ingeniería Informática**  
 Taller de Programación en Bajo Nivel · Junio 2026
 
 </div>
