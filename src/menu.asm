@@ -6,6 +6,10 @@ global main
 extern printf
 extern scanf
 extern system
+extern monitoreo_local
+extern modulo2_diagnosticar
+extern modulo5_analizar
+extern modulo5_estadisticas
 
 section .data
     titulo      db "==========================================", 10
@@ -22,16 +26,15 @@ section .data
                 db "Seleccione una opcion: ", 0
 
     fmt_input   db "%d", 0
+    fmt_dummy   db "%c", 0
     msg_inv     db "Opcion invalida. Intente de nuevo.", 10, 0
     msg_salir   db "Cerrando TechScan64. Hasta luego.", 10, 0
-    msg_op1     db "[Modulo 2] Diagnosticando equipo...", 10, 0
-    msg_op2     db "[Modulo 4] Iniciando monitoreo...", 10, 0
-    msg_op3     db "[Modulo 5] Leyendo reportes USB...", 10, 0
-    msg_op4     db "[Modulo 5] Cargando estadisticas...", 10, 0
+    msg_continuar db "Presione ENTER para volver al menu...", 10, 0
     cls_cmd     db "cls", 0
 
 section .bss
-    opcion      resd 1
+    opcion       resd 1
+    buffer_dummy resb 8
 
 section .text
 
@@ -72,30 +75,53 @@ main:
     jmp  .bucle
 
 .op1:
-    lea  rcx, [rel msg_op1]
-    call printf
+    call modulo2_diagnosticar
+    call pausar
     jmp  .bucle
 
 .op2:
-    lea  rcx, [rel msg_op2]
-    call printf
+    call monitoreo_local
     jmp  .bucle
 
 .op3:
-    lea  rcx, [rel msg_op3]
-    call printf
+    call modulo5_analizar
+    call pausar
     jmp  .bucle
 
 .op4:
-    lea  rcx, [rel msg_op4]
-    call printf
+    call modulo5_estadisticas
+    call pausar
     jmp  .bucle
 
 .op5:
     lea  rcx, [rel msg_salir]
     call printf
-
     xor  eax, eax
+    add  rsp, 32
+    pop  rbp
+    ret
+
+; ==========================================
+; pausar: muestra mensaje y espera ENTER
+; ==========================================
+pausar:
+    push rbp
+    mov  rbp, rsp
+    sub  rsp, 32
+
+    ; Limpiar el \n que quedo del scanf anterior
+    lea  rcx, [rel fmt_dummy]
+    lea  rdx, [rel buffer_dummy]
+    call scanf
+
+    ; Ahora mostrar mensaje y esperar ENTER real
+    lea  rcx, [rel msg_continuar]
+    call printf
+
+    lea  rcx, [rel fmt_dummy]
+    lea  rdx, [rel buffer_dummy]
+    call scanf
+
     add  rsp, 32
     pop  rbp
     ret
