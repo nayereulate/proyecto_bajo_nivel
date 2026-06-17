@@ -1,7 +1,5 @@
-
 // modulo 3: persistencia y formato de Reportes
 // estructura y lectura de archivos .rep, log de eventos y exportacion CSV
-
 
 #include <stdio.h>
 #include <string.h>
@@ -10,7 +8,6 @@
 
 // Forzamos a GCC a no dejar espacios vacios (padding) en la memoria,garantizando que los offsets coincidan exactamente con el codigo .asm y con las copias de la estructura en modulo2.c y analyzer.c.
 #pragma pack(push, 1)
-
 // Estructura de Datos el oficial
 typedef struct {
     uint32_t id_equipo;       // Offset 0   (4 bytes)
@@ -36,8 +33,7 @@ typedef struct {
     uint32_t cant_registros;  // Cantidad de registros principales en el archivo
 } ReporteHeader;
 
-// Bloque de monitoreo opcional . Se anexa despues del registro principal con su propia firma "MON1".Un lector
-// que no lo conozca como analyzer.c jamas llega a leerlo porque se detiene justo despues de leer el registro principal
+// Bloque de monitoreo opcional . Se anexa despues del registro principal con su propia firma "MON1".Un lector que no lo conozca como analyzer.c jamas llega a leerlo porque se detiene justo despues de leer el registro principal
 typedef struct {
     char tag[4];               // "MON1"
     double uso_ram_pct;        // Snapshot de uso de RAM al momento del refresco
@@ -46,9 +42,7 @@ typedef struct {
     char timestamp[24];        // Marca de tiempo del ultimo refresco
 } BloqueMonitoreo;
 
-// Bloque de estadisticas opcional (tabla de la Seccion 10). Se anexa
-// despues del bloque de monitoreo (o del registro principal si no hay
-// monitoreo) con su propia firma "STA1". Mismo principio de compatibilidad.
+// Bloque de estadisticas opcional. Se anexa despues del bloque de monitoreo o del registro principal si no haymonitoreo con su propia firma "STA1". Mismo principio de compatibilidad.
 typedef struct {
     char tag[4];                  // "STA1"
     double promedio_ram_libre;    // Promedio de RAM libre del laboratorio (MB)
@@ -132,7 +126,7 @@ int leer_reporte(const char *nombre_archivo, EquipoInfo *equipo) {
     return 1; // Exito
 }
 
-// 3. archivo .log con marcasd en tiempo reales 
+// 3. archivo .log con marcas dE en tiempo reales 
 void registrar_log(const char *mensaje) {
     FILE *log = fopen("events.log", "a");
     if (log != NULL) {
@@ -141,7 +135,7 @@ void registrar_log(const char *mensaje) {
         char timestamp[26];
         strftime(timestamp, sizeof(timestamp), "%Y-%m-%d %H:%M:%S", tm_info);
 
-        // Imprime en el archivo: [2026-06-12 11:14:30] [LOG]: Mensaje
+        // Imprime en el archivo Ejemplo: [2026-06-12 11:14:30] [LOG]: Mensaje
         fprintf(log, "[%s] %s\n", timestamp, mensaje);
         fclose(log);
     }
@@ -172,7 +166,7 @@ void exportar_csv(const char *nombre_csv, const EquipoInfo *equipo) {
 
 
 // 5.Bloque de monitoreo opcinal 
-// Lo puede llamar el Modulo 4 (monitor.asm, via wrapper en C) cuando quiera dejar constancia de un snapshot de monitoreo dentro del .rep.
+// puede llamar el Modulo 4 monitor.asm, via wrapper en C cuando quiera dejar constancia de un snapshot de monitoreo dentro del .rep.
 
 void agregar_bloque_monitoreo(const char *nombre_archivo, double uso_ram_pct,
                                double uso_cpu_pct, uint64_t disco_libre) {
@@ -225,7 +219,7 @@ int leer_bloque_monitoreo(const char *nombre_archivo, BloqueMonitoreo *bloque) {
 }
 
 // 6.Bloque de estadisticas opcional
-// Lo puede llamar el Modulo 5 (analyzer.c) al terminar su analisis central, para dejar constancia del resumen dentro del .rep del equipo analizado.
+// puede llamar el Modulo 5 analyzer.c al terminar su analisis central, para dejar constancia del resumen dentro del .rep del equipo analizado.
 
 void agregar_bloque_estadisticas(const char *nombre_archivo, double promedio_ram_libre,
                                   double promedio_disco_libre, uint32_t categoria_final,
