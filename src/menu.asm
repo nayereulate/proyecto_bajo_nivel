@@ -21,16 +21,16 @@ section .data
                 db "2. Monitorear en tiempo real             ", 10
                 db "3. Analizar reportes del USB             ", 10
                 db "4. Estadisticas globales                 ", 10
-                db "5. Salir                                 ", 10
+                db "5. Salir                                ", 10
                 db "==========================================", 10
                 db "Seleccione una opcion: ", 0
 
-    fmt_input   db "%d", 0
-    fmt_dummy   db "%c", 0
-    msg_inv     db "Opcion invalida. Intente de nuevo.", 10, 0
-    msg_salir   db "Cerrando TechScan64. Hasta luego.", 10, 0
+    fmt_input     db "%d", 0
+    fmt_dummy     db "%c", 0
+    msg_inv       db "Opcion invalida. Intente de nuevo.", 10, 0
+    msg_salir     db "Cerrando TechScan64. Hasta luego.", 10, 0
     msg_continuar db "Presione ENTER para volver al menu...", 10, 0
-    cls_cmd     db "cls", 0
+    cls_cmd       db "cls", 0
 
 section .bss
     opcion       resd 1
@@ -109,12 +109,10 @@ pausar:
     mov  rbp, rsp
     sub  rsp, 32
 
-    ; Limpiar el \n que quedo del scanf anterior
     lea  rcx, [rel fmt_dummy]
     lea  rdx, [rel buffer_dummy]
     call scanf
 
-    ; Ahora mostrar mensaje y esperar ENTER real
     lea  rcx, [rel msg_continuar]
     call printf
 
