@@ -1,0 +1,118 @@
+==================================================================================
+          TECHSCAN64 - PENDIENTES RESUELTOS POR MODULO
+==================================================================================
+
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                     MODULO 2 — Captura de hardware                          ║
+║                          Archivo: src/modulo2.c                             ║
+╠══════╦═══════════════════════════════════════╦════════════════════════════╣
+║      ║  REQUISITO                            ║  SOLUCION IMPLEMENTADA     ║
+╠══════╬═══════════════════════════════════════╬════════════════════════════╣
+║  ❌  ║  Usuario activo                       ║  GetUserNameA()            ║
+╠══════╬═══════════════════════════════════════╬════════════════════════════╣
+║  ❌  ║  Sistema operativo                    ║  RtlGetVersion() via ntdll ║
+║      ║                                       ║  Detecta Win10/Win11 por   ║
+║      ║                                       ║  Build Number              ║
+╠══════╬═══════════════════════════════════════╬════════════════════════════╣
+║  ❌  ║  Arquitectura del sistema             ║  GetNativeSystemInfo()     ║
+║      ║                                       ║  x86_64 / x86 / ARM64     ║
+╠══════╬═══════════════════════════════════════╬════════════════════════════╣
+║  ❌  ║  Numero de nucleos via CPUID          ║  __cpuid() hoja 1          ║
+║      ║                                       ║  EBX[23:16] = nucleos log. ║
+╠══════╬═══════════════════════════════════════╬════════════════════════════╣
+║  ❌  ║  GPU real (estaba hardcodeado         ║  Registro de Windows:      ║
+║      ║  "No detectada")                      ║  HKLM\...\{4d36e968}\0000  ║
+║      ║                                       ║  valor: DriverDesc         ║
+╠══════╬═══════════════════════════════════════╬════════════════════════════╣
+║  ❌  ║  Placa base real (estaba              ║  Registro de Windows:      ║
+║      ║  hardcodeado "No detectada")          ║  HKLM\HARDWARE\DESCRIPTION ║
+║      ║                                       ║  \System\BIOS              ║
+║      ║                                       ║  valor: BaseBoardProduct   ║
+╠══════╬═══════════════════════════════════════╬════════════════════════════╣
+║  ✅  ║  Nombre PC, RAM, disco, CPU, categ.   ║  Ya funcionaba             ║
+╚══════╩═══════════════════════════════════════╩════════════════════════════╝
+
+  Libreria agregada al build: -ladvapi32  (necesaria para el registro)
+
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                  MODULO 4 — Monitoreo local y FPU                           ║
+║                         Archivo: src/monitor.asm                            ║
+╠══════╦═══════════════════════════════════════╦════════════════════════════╣
+║      ║  REQUISITO                            ║  SOLUCION IMPLEMENTADA     ║
+╠══════╬═══════════════════════════════════════╬════════════════════════════╣
+║  ❌  ║  Instruccion FADD                     ║  Carga promedio sistema:   ║
+║      ║  (no se usaba en ninguna parte)       ║  FADD st0, st1             ║
+║      ║                                       ║  = (RAM% + CPU%) / 2       ║
+╠══════╬═══════════════════════════════════════╬════════════════════════════╣
+║  ❌  ║  Uso de CPU en tiempo real            ║  calcular_cpu_pct():       ║
+║      ║  (solo mostraba RAM y disco)          ║  GetSystemTimes() x2       ║
+║      ║                                       ║  con Sleep(500ms) entre    ║
+║      ║                                       ║  ellas. Formula:           ║
+║      ║                                       ║  active*100 / total        ║
+╠══════╬═══════════════════════════════════════╬════════════════════════════╣
+║  🐛  ║  BUG: fdiv st0, st1 calculaba el      ║  Corregido a: fdivp        ║
+║      ║  reciproco (total / usado*100)        ║  que calcula ST(1)/ST(0)   ║
+║      ║  → siempre daba 0%                    ║  = usado*100 / total ✓     ║
+╠══════╬═══════════════════════════════════════╬════════════════════════════╣
+║  ✅  ║  FLD, FMUL, FDIV, FISTP               ║  Ya presentes              ║
+║  ✅  ║  Barras ASCII de RAM y disco          ║  Ya funcionaban            ║
+║  ✅  ║  Timestamp por actualizacion          ║  Ya funcionaba             ║
+╚══════╩═══════════════════════════════════════╩════════════════════════════╝
+
+  Instrucciones FPU completas tras los cambios:
+  ┌──────────┬────────────────────────────────────────────────────────────┐
+  │ FILD     │ Cargar entero al stack FPU (≡ FLD para enteros)           │
+  │ FMUL     │ Multiplicar por 100.0 / por 0.5                           │
+  │ FDIVP    │ Dividir usado×100 / total (corregido)                     │
+  │ FADD     │ Sumar RAM% + CPU% para promedio  ← NUEVO                  │
+  │ FISTP    │ Guardar resultado entero y hacer pop                       │
+  │ FSTP     │ Descartar valor residual del stack FPU                     │
+  └──────────┴────────────────────────────────────────────────────────────┘
+
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║              MODULO 5 — Analisis central y comparacion                      ║
+║                         Archivo: src/analyzer.c                             ║
+╠══════╦═══════════════════════════════════════╦════════════════════════════╣
+║      ║  REQUISITO                            ║  SOLUCION IMPLEMENTADA     ║
+╠══════╬═══════════════════════════════════════╬════════════════════════════╣
+║  ❌  ║  Ordenamiento por RAM total           ║  ordenar_por_ram_asc()     ║
+║      ║  (solo ordenaba por timestamp)        ║  Muestra top 5 equipos con ║
+║      ║                                       ║  menos RAM libre           ║
+╠══════╬═══════════════════════════════════════╬════════════════════════════╣
+║  ❌  ║  Ordenamiento por espacio libre       ║  ordenar_por_disco_asc()   ║
+║      ║  en disco                             ║  Muestra top 5 equipos con ║
+║      ║                                       ║  menos disco libre         ║
+╠══════╬═══════════════════════════════════════╬════════════════════════════╣
+║  ❌  ║  Identificar equipo mas antiguo       ║  Compara FILETIME de cada  ║
+║      ║  (no existia, solo habia              ║  reporte. El de FILETIME   ║
+║      ║  "equipo con menos RAM")              ║  menor = mas antiguo.      ║
+║      ║                                       ║  Se muestra en pantalla    ║
+╠══════╬═══════════════════════════════════════╬════════════════════════════╣
+║  ❌  ║  Lista priorizada de revision         ║  imprimir_lista_priorizada ║
+║      ║  tecnica (no existia)                 ║  ordenar_por_prioridad()   ║
+║      ║                                       ║  CRITICO   → [URGENTE]    ║
+║      ║                                       ║  REGULAR   → [REVISAR]    ║
+║      ║                                       ║  BUENO     → [ACEPTABLE]  ║
+║      ║                                       ║  EXCELENTE → [OK]         ║
+╠══════╬═══════════════════════════════════════╬════════════════════════════╣
+║  ✅  ║  Lectura de archivos .rep             ║  Ya funcionaba             ║
+║  ✅  ║  Agrupacion por categoria             ║  Ya funcionaba             ║
+║  ✅  ║  Promedios de RAM y disco             ║  Ya funcionaban            ║
+║  ✅  ║  Grafico ASCII por categoria          ║  Ya funcionaba             ║
+╚══════╩═══════════════════════════════════════╩════════════════════════════╝
+
+
+==================================================================================
+  RESUMEN GENERAL
+==================================================================================
+
+  Modulo 2:  6 requisitos faltaban  →  6 implementados  ✅
+  Modulo 4:  2 requisitos faltaban  →  2 implementados + 1 bug corregido  ✅
+  Modulo 5:  3 requisitos faltaban  →  3 implementados  ✅
+             ─────────────────────────────────────────
+  TOTAL:    11 pendientes resueltos + 1 bug corregido
+
+==================================================================================
