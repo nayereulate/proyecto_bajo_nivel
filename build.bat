@@ -13,7 +13,7 @@ gcc -c src\analyzer.c   -o bin\analyzer.o
 gcc -c src\modulo2.c    -o bin\modulo2.o
 
 gcc bin\menu.o bin\monitor.o bin\report_io.o bin\analyzer.o bin\modulo2.o ^
-    -o bin\techscan64.exe -lkernel32 -lpsapi
+    -o bin\techscan64.exe -static -lkernel32 -lpsapi -ladvapi32
 
 echo.
 echo Listo! Ejecutando...
