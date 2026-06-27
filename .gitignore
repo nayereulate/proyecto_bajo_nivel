@@ -1,0 +1,23 @@
+# Binarios compilados (generados por build.bat)
+bin/
+src/bin/
+
+# Archivos temporales de compilacion
+*.obj
+*.o
+*.pdb
+
+# Scripts de compilacion temporal
+compile_all.sh
+test_compile.bat
+
+# Reportes generados en tiempo de ejecucion
+*.rep
+reportes/
+
+# Logs de ejecucion
+*.log
+
+# Archivos de IDE
+*.user
+.vs/
